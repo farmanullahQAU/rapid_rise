@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mssql_connection/mssql_connection.dart';
 import 'package:rapid_rise/models/employee.dart';
 
@@ -10,7 +13,43 @@ class DatabaseService {
   DatabaseService._internal();
 
   MssqlConnection? _connection;
+  final _secureStorage = const FlutterSecureStorage();
 
+  // Save connection parameters securely
+  Future<void> saveConnectionParams({
+    required String ip,
+    required String port,
+    required String username,
+    required String password,
+    required String databaseName,
+  }) async {
+    await _secureStorage.write(key: 'db_ip', value: ip);
+    await _secureStorage.write(key: 'db_port', value: port);
+    await _secureStorage.write(key: 'db_username', value: username);
+    await _secureStorage.write(key: 'db_password', value: password);
+    await _secureStorage.write(key: 'db_name', value: databaseName);
+  }
+
+  // Retrieve saved connection parameters
+  Future<Map<String, String?>> getConnectionParams() async {
+    return {
+      'ip': await _secureStorage.read(key: 'db_ip'),
+      'port': await _secureStorage.read(key: 'db_port'),
+      'username': await _secureStorage.read(key: 'db_username'),
+      'password': await _secureStorage.read(key: 'db_password'),
+      'databaseName': await _secureStorage.read(key: 'db_name'),
+    };
+  }
+
+  // Check network connectivity
+  Future<bool> checkNetworkConnectivity() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return !connectivityResult.contains(ConnectivityResult.none);
+  }
+
+  // Ensure connection is established
+
+  // Connect to database with robust error handling
   Future<bool> connect({
     required String ip,
     required String port,
@@ -18,23 +57,62 @@ class DatabaseService {
     required String password,
     required String databaseName,
   }) async {
+    // Dispose of existing connection
+    await _connection?.disconnect();
     _connection = MssqlConnection.getInstance();
 
     try {
-      final connected = await _connection?.connect(
+      // Validate input parameters
+      if (ip.isEmpty ||
+          port.isEmpty ||
+          username.isEmpty ||
+          databaseName.isEmpty) {
+        debugPrint("Invalid connection parameters");
+        return false;
+      }
+
+      // Attempt connection with timeout
+      final connected = await _connection!
+          .connect(
         ip: ip,
         port: port,
         databaseName: databaseName,
         username: username,
         password: password,
+      )
+          .timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint("Connection attempt timed out");
+          return false;
+        },
       );
 
-      debugPrint(connected! ? "Connected to SQL Server" : "Connection failed");
-      return connected;
+      if (connected) {
+        // Save successful connection parameters
+        await saveConnectionParams(
+          ip: ip,
+          port: port,
+          username: username,
+          password: password,
+          databaseName: databaseName,
+        );
+        debugPrint("Successfully connected to SQL Server");
+        return true;
+      } else {
+        debugPrint("Connection failed");
+        return false;
+      }
     } catch (e) {
       debugPrint("Connection error: $e");
       return false;
     }
+  }
+
+  // Close the database connection
+  Future<void> disconnect() async {
+    await _connection?.disconnect();
+    _connection = null;
   }
 
   Future<Employee?> login(
