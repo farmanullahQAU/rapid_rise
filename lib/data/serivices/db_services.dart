@@ -59,39 +59,15 @@ class DatabaseService {
     }
   }
 
-  // Future<String?> checkAndInsertComponentScan({
-  //   required String componentId,
-  //   required String flightId,
-  //   required String userId,
-  // }) async {
-  //   try {
-  //     final checkResult = await _connection?.getData(
-  //       "SELECT * FROM TblComponentsScan WHERE Component = '$componentId' AND FlightID = '$flightId' ",
-  //     );
-
-  //     List<dynamic> data = jsonDecode(checkResult ?? "[]");
-
-  //     if (data.isNotEmpty) {
-  //       throw Exception(
-  //           "Component $componentId for Flight $flightId has already been scanned.");
-  //     }
-
-  //     await _connection?.writeData(
-  //       'INSERT INTO TblComponentsScan (ScanDate, ScannedBy, Component, FlightID, ScanTime) VALUES (GETDATE(), $userId, $componentId, $flightId, GETDATE())',
-  //     );
-
-  //     return 'Component $componentId for Flight $flightId has been successfully scanned.';
-  //   } catch (e) {
-  //     debugPrint("Component scan error: $e");
-  //     throw Exception(" $e"); // Throw a custom error
-  //   }
-  // }
   Future<String?> checkAndInsertComponentScan({
     required String componentId, // Station ID
     required String flightId,
     required String userId,
   }) async {
     try {
+      // await _connection?.writeData(
+      //     "DELETE FROM TblComponentsScan WHERE Component = '$componentId' AND FlightID = '$flightId'");
+      // return "deleted";
       // Check 1: Validate Station ID exists in TblStations
       final stationCheckResult = await _connection?.getData(
           "SELECT * FROM TblStations WHERE StationID = '$componentId'");
@@ -120,13 +96,13 @@ class DatabaseService {
             "Component $componentId for Flight $flightId has already been scanned.");
       }
 
-      // Insert scan record
-      await _connection?.writeData(
-          'INSERT INTO TblComponentsScan (ScanDate, ScannedBy, Component, FlightID, ScanTime) VALUES (GETDATE(), $userId, $componentId, $flightId, GETDATE())');
-
       // Process-specific update based on Station ID
       await _updateProcessSpecificColumns(componentId, flightId, userId);
-
+      // Insert scan record
+      if (componentId != '11' && componentId != '12' && componentId != '13') {
+        await _connection?.writeData(
+            'INSERT INTO TblComponentsScan (ScanDate, ScannedBy, Component, FlightID, ScanTime) VALUES (GETDATE(), $userId, $componentId, $flightId, GETDATE())');
+      }
       return 'Component $componentId for Flight $flightId has been successfully scanned.';
     } catch (e) {
       debugPrint("Component scan error: $e");
@@ -138,50 +114,57 @@ class DatabaseService {
 
   Future<void> _updateProcessSpecificColumns(
       String componentId, String flightId, String userId) async {
-    try {
-      switch (componentId) {
-        case '1':
-          await _connection?.writeData(
-              "UPDATE TblProductionFlights SET DateRailsCut = GETDATE(), RailsCutBy = $userId WHERE ID = $flightId");
-          break;
-        case '2':
-          await _connection?.writeData(
-              "UPDATE TblProductionFlights SET DateRailsWelded = GETDATE(), RailsWeldedBy = $userId WHERE ID = $flightId");
-          break;
-        case '3':
-          await _connection?.writeData(
-              "UPDATE TblProductionFlights SET DateTreadsCut = GETDATE(), TreadsCutBy = $userId WHERE ID = $flightId");
-          break;
-        case '4':
-          await _connection?.writeData(
-              "UPDATE TblProductionFlights SET DateStingersCut = GETDATE(), StringersCutBy = $userId WHERE ID = $flightId");
-          break;
-        case '5':
-          await _connection?.writeData(
-              "UPDATE TblProductionFlights SET DateAssembled = GETDATE(), AssembledBy = $userId WHERE ID = $flightId");
-          break;
-        case '6':
-          // Special handling for TblProductionLandings with join
-          await _connection?.writeData(
-              "UPDATE TblProductionLandings SET DateAssembled = GETDATE(), AssembledBy = $userId WHERE AssociatedProjectFlightID = (SELECT ProjectFlightID FROM TblProductionFlights WHERE ID = $flightId)");
-          break;
-        case '7':
-          await _connection?.writeData(
-              "UPDATE TblProductionFlights SET DateAnglesCut = GETDATE() WHERE ID = $flightId");
-          break;
-        case '9':
-          await _connection?.writeData(
-              "UPDATE TblProductionFlights SET DateBendsCut = GETDATE(), BendsCutBy = $userId WHERE ID = $flightId");
-          break;
-        case '10':
-          await _connection?.writeData(
-              "UPDATE TblProductionFlights SET DateBendsCompleted = GETDATE(), BendsCompletedBy = $userId WHERE ID = $flightId");
-          break;
-        // Additional cases for processes 11, 12, 13 can be added based on the document's specifications
-      }
-    } catch (e) {
-      debugPrint("Process-specific update error: $e");
-      throw Exception("Failed to update process-specific columns: $e");
+    switch (componentId) {
+      case '1':
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DateRailsCut = GETDATE(), RailsCutBy = $userId WHERE ID = $flightId");
+        break;
+      case '2':
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DateRailsWelded = GETDATE(), RailsWeldedBy = $userId WHERE ID = $flightId");
+        break;
+      case '3':
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DateTreadsCut = GETDATE(), TreadsCutBy = $userId WHERE ID = $flightId");
+        break;
+      case '4':
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DateStingersCut = GETDATE(), StringersCutBy = $userId WHERE ID = $flightId");
+        break;
+      case '5':
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DateAssembled = GETDATE(), AssembledBy = $userId WHERE ID = $flightId");
+        break;
+      case '6':
+        // Special handling for TblProductionLandings with join
+        await _connection?.writeData(
+            "UPDATE TblProductionLandings SET DateAssembled = GETDATE(), AssembledBy = $userId WHERE AssociatedProjectFlightID = (SELECT ProjectFlightID FROM TblProductionFlights WHERE ID = $flightId)");
+        break;
+      case '7':
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DateAnglesCut = GETDATE() WHERE ID = $flightId");
+        break;
+      case '9':
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DateBendsCut = GETDATE(), BendsCutBy = $userId WHERE ID = $flightId");
+        break;
+      case '10':
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DateBendsCompleted = GETDATE(), BendsCompletedBy = $userId WHERE ID = $flightId");
+        break;
+      case '11':
+        await handlePackagingProcess('11-$flightId', userId);
+        break;
+
+      case '12':
+        await handleStairDeliveryProcess('12-$flightId', userId);
+        break;
+
+      case '13':
+        await handleBendsDeliveryProcess('13-$flightId', userId);
+        break;
+      default:
+        throw Exception("Invalid component ID: $componentId");
     }
   }
 // Add these methods to the DatabaseService class
@@ -206,7 +189,7 @@ class DatabaseService {
         throw Exception("No flight found with ID $flightId");
       }
 
-      String idShaft = shaftData[0]['IDShaft'];
+      int idShaft = shaftData[0]['IDShaft'];
       String startLevel = shaftData[0]['StartLevelName'];
 
       // Find related flights
@@ -219,23 +202,15 @@ class DatabaseService {
         String relatedFlightId = flight['ID'].toString();
 
         // Perform standard scan checks
-        await checkAndInsertComponentScan(
-            componentId: '11', flightId: relatedFlightId, userId: userId);
+        await _connection?.writeData(
+            'INSERT INTO TblComponentsScan (ScanDate, ScannedBy, Component, FlightID, ScanTime) VALUES (GETDATE(), $userId, 11, $relatedFlightId, GETDATE())');
 
         // Update packaging information
-        await _connection?.writeData("""
-        UPDATE TblProductionFlights 
-        SET DatePackaged = GETDATE(), PackagedBy = $userId 
-        WHERE ID = $relatedFlightId;
-        
-        UPDATE TblProductionLandings 
-        SET DatePackaged = GETDATE(), PackagedBy = $userId 
-        WHERE AssociatedProjectFlightID = (
-          SELECT ProjectFlightID 
-          FROM TblProductionFlights 
-          WHERE ID = $relatedFlightId
-        )
-        """);
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DatePackaged = GETDATE(), PackagedBy = $userId WHERE ID = $relatedFlightId");
+
+        await _connection?.writeData(
+            "UPDATE TblProductionLandings SET DatePackaged = GETDATE(), PackagedBy = $userId WHERE AssociatedProjectFlightID = (SELECT ProjectFlightID FROM TblProductionFlights WHERE ID = $relatedFlightId)");
       }
 
       return 'Packaging process completed for flights related to $flightId';
@@ -259,7 +234,7 @@ class DatabaseService {
 
       // Query for flight IDs in delivery docket (excluding assembly type 4)
       final flightsResult = await _connection?.getData(
-          "SELECT DISTINCT FlightID FROM TblDelDocketDetail WHERE IDDelDocket = '$delDocketId' AND IDAssembly <> 4");
+          "SELECT DISTINCT ProjectFlightID FROM TblDelDocketDetail WHERE IDDelDocket = '$delDocketId' AND IDAssembly <> 4");
       List<dynamic> flights = jsonDecode(flightsResult ?? "[]");
 
       if (flights.isEmpty) {
@@ -270,30 +245,15 @@ class DatabaseService {
       for (var flight in flights) {
         String flightId = flight['FlightID'].toString();
 
-        // Perform standard scan checks
-        await checkAndInsertComponentScan(
-            componentId: '12', flightId: flightId, userId: userId);
+        await _connection?.writeData(
+            'INSERT INTO TblComponentsScan (ScanDate, ScannedBy, Component, FlightID, ScanTime) VALUES (GETDATE(), $userId, 12, $flightId, GETDATE())');
 
         // Update despatch information
-        await _connection?.writeData("""
-        UPDATE TblProductionLandings 
-        SET 
-          DateDespatched = GETDATE(), 
-          DespatchedBy = $userId,
-          DateRailDespatched = GETDATE(),
-          RailDespatchedBy = $userId
-        WHERE AssociatedProjectFlightID = (
-          SELECT ProjectFlightID 
-          FROM TblProductionFlights 
-          WHERE ID = $flightId
-        );
-        
-        UPDATE TblProductionFlights 
-        SET 
-          DateDespatched = GETDATE(), 
-          DespatchedBy = $userId
-        WHERE ID = $flightId
-        """);
+        await _connection?.writeData(
+            "UPDATE TblProductionLandings SET DateDespatched = GETDATE(), DespatchedBy = $userId, DateRailDespatched = GETDATE(), RailDespatchedBy = $userId WHERE AssociatedProjectFlightID = (SELECT ProjectFlightID FROM TblProductionFlights WHERE ID = $flightId)");
+
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DateDespatched = GETDATE(), DespatchedBy = $userId WHERE ID = $flightId");
       }
 
       return 'Stair delivery process completed for docket $delDocketId';
@@ -317,7 +277,7 @@ class DatabaseService {
 
       // Query for flight IDs in delivery docket (only assembly type 4)
       final flightsResult = await _connection?.getData(
-          "SELECT DISTINCT FlightID FROM TblDelDocketDetail WHERE IDDelDocket = '$delDocketId' AND IDAssembly = 4");
+          "SELECT DISTINCT ProjectFlightID FROM TblDelDocketDetail WHERE IDDelDocket = '$delDocketId' AND IDAssembly = 4");
       List<dynamic> flights = jsonDecode(flightsResult ?? "[]");
 
       if (flights.isEmpty) {
@@ -330,62 +290,18 @@ class DatabaseService {
         String flightId = flight['FlightID'].toString();
 
         // Perform standard scan checks
-        await checkAndInsertComponentScan(
-            componentId: '13', flightId: flightId, userId: userId);
+        await _connection?.writeData(
+            'INSERT INTO TblComponentsScan (ScanDate, ScannedBy, Component, FlightID, ScanTime) VALUES (GETDATE(), $userId, 13, $flightId, GETDATE())');
 
         // Update bends despatch information
-        await _connection?.writeData("""
-        UPDATE TblProductionFlights 
-        SET 
-          DateBendsDespatched = GETDATE(), 
-          BendsDespatchedBy = $userId
-        WHERE ID = $flightId
-        """);
+        await _connection?.writeData(
+            "UPDATE TblProductionFlights SET DateBendsDespatched = GETDATE(), BendsDespatchedBy = $userId WHERE ID = $flightId");
       }
 
       return 'Bends delivery process completed for docket $delDocketId';
     } catch (e) {
       debugPrint("Bends delivery process error: $e");
       throw Exception("Bends delivery process failed: $e");
-    }
-  }
-
-// Utility method to validate barcode format
-  bool validateBarcodeFormat(String barcode) {
-    // Check basic barcode format s-fffff
-    RegExp barcodePattern = RegExp(r'^\d+-\d{5}$');
-    return barcodePattern.hasMatch(barcode);
-  }
-
-// Method to get detailed scan history
-  Future<List<dynamic>> getScanHistory({
-    String? componentId,
-    String? flightId,
-    DateTime? startDate,
-    DateTime? endDate,
-  }) async {
-    try {
-      String whereClause = '';
-      List<String> conditions = [];
-
-      if (componentId != null) conditions.add("Component = '$componentId'");
-      if (flightId != null) conditions.add("FlightID = '$flightId'");
-      if (startDate != null)
-        conditions.add("ScanDate >= '${startDate.toIso8601String()}'");
-      if (endDate != null)
-        conditions.add("ScanDate <= '${endDate.toIso8601String()}'");
-
-      if (conditions.isNotEmpty) {
-        whereClause = 'WHERE ${conditions.join(' AND ')}';
-      }
-
-      final result = await _connection?.getData(
-          "SELECT * FROM TblComponentsScan $whereClause ORDER BY ScanDate DESC");
-
-      return jsonDecode(result ?? "[]");
-    } catch (e) {
-      debugPrint("Scan history retrieval error: $e");
-      throw Exception("Failed to retrieve scan history: $e");
     }
   }
 
