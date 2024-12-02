@@ -156,7 +156,7 @@ class HomePage extends StatelessWidget {
                           key: const ValueKey('scan_result'),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).cardColor,
+                            color: context.theme.colorScheme.onPrimaryContainer,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
@@ -167,27 +167,29 @@ class HomePage extends StatelessWidget {
                             ],
                           ),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
                                 'Scanned Barcode',
                                 style: Theme.of(context)
                                     .textTheme
-                                    .titleSmall
+                                    .titleLarge
                                     ?.copyWith(fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 homeController.scanResult.value,
-                                style: Theme.of(context).textTheme.bodySmall,
+                                style: Theme.of(context).textTheme.titleSmall,
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 homeController.scanMessage.value,
                                 style: Theme.of(context)
                                     .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: Colors.grey),
+                                    .titleSmall
+                                    ?.copyWith(
+                                        color: context.theme.colorScheme.error),
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ),
