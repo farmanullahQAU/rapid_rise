@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../themes/view.dart';
 import 'controller.dart';
+import 'myScans/view.dart';
 
 class HomePage extends StatelessWidget {
   final homeController = Get.put(HomeController());
@@ -16,8 +16,14 @@ class HomePage extends StatelessWidget {
         title: const Text('Barcode Scanner'),
         actions: [
           IconButton(
-            onPressed: () {
-              Get.to(() => ThemeSettingsPage());
+            onPressed: () async {
+              final data = await homeController.databaseService
+                  .fetchMergedScannedData(homeController.employee.employeeID);
+
+              print(data.first.station?.stationDescription);
+
+              // retur;
+              // Get.to(() => ThemeSettingsPage());
             },
             icon: const Icon(Icons.settings),
           ),
@@ -43,6 +49,25 @@ class HomePage extends StatelessWidget {
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error,
                       ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                onTap: () {
+                  Get.to(() => ScannedDataPage());
+                },
+                value: 'My Scans',
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.qr_code_scanner,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'My Scans',
+                      style: TextStyle(),
                     ),
                   ],
                 ),
@@ -169,10 +194,11 @@ class HomePage extends StatelessWidget {
                         ),
                 ),
               ),
+
               const Spacer(),
               // Footer Text
               Text(
-                'Powered by Vertex Stairs',
+                'Powered by RapidRise',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: Colors.white.withOpacity(0.8),
                     ),

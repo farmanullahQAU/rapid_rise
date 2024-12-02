@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mssql_connection/mssql_connection.dart';
+import 'package:rapid_rise/models/components_scan.dart';
 import 'package:rapid_rise/models/employee.dart';
 
 class DatabaseService {
@@ -380,6 +381,56 @@ class DatabaseService {
     } catch (e) {
       debugPrint("Bends delivery process error: $e");
       throw Exception("Bends delivery process failed: $e");
+    }
+  }
+
+  // Future<List<ComponentScan>> fetchScannedData(int scannedBy) async {
+  //   try {
+  //     final results = await _connection?.getData(
+  //         "SELECT * FROM TblComponentsScan WHERE ScannedBy = $scannedBy");
+
+  //     if (results == null) {
+  //       throw Exception('Scanned data not found.');
+  //     } else {
+  //       final data = jsonDecode(results);
+  //       return data
+  //           .map<ComponentScan>((json) => ComponentScan.fromJson(json))
+  //           .toList();
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Error fetching scanned data: $e');
+  //     throw Exception('Failed to fetch scanned data.');
+  //   }
+  // }
+
+  Future<List<ComponentScan>> fetchMergedScannedData(int scannedBy) async {
+    try {
+      final results = await _connection?.getData('''
+      SELECT 
+        c.ScanID,
+        c.ScanDate,
+        c.ScannedBy,
+        c.Component AS StationID, -- Alias Component to StationID
+        c.FlightID,
+        c.ScanTime,
+        s.StationDescription,
+        s.LeadTime
+      FROM TblComponentsScan c
+      JOIN TblStations s ON c.Component = s.StationID
+      WHERE c.ScannedBy = $scannedBy
+    ''');
+
+      if (results == null) {
+        throw Exception('No scanned data found for the provided user.');
+      } else {
+        final data = jsonDecode(results);
+        return data
+            .map<ComponentScan>((json) => ComponentScan.fromJson(json))
+            .toList();
+      }
+    } catch (e) {
+      debugPrint('Error fetching merged scanned data: $e');
+      throw Exception('Failed to fetch merged scanned data.');
     }
   }
 
