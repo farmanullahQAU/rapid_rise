@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rapid_rise/themes/view.dart';
 
 import 'controller.dart';
 import 'myScans/view.dart';
@@ -15,18 +16,6 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Barcode Scanner'),
         actions: [
-          IconButton(
-            onPressed: () async {
-              final data = await homeController.databaseService
-                  .fetchMergedScannedData(homeController.employee.employeeID);
-
-              print(data.first.station?.stationDescription);
-
-              // retur;
-              // Get.to(() => ThemeSettingsPage());
-            },
-            icon: const Icon(Icons.settings),
-          ),
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'logout') {
@@ -57,7 +46,7 @@ class HomePage extends StatelessWidget {
                 onTap: () {
                   Get.to(() => ScannedDataPage());
                 },
-                value: 'My Scans',
+                value: 'myScans',
                 child: const Row(
                   children: [
                     Icon(
@@ -67,6 +56,25 @@ class HomePage extends StatelessWidget {
                     SizedBox(width: 8),
                     Text(
                       'My Scans',
+                      style: TextStyle(),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                onTap: () {
+                  Get.to(() => ThemeSettingsPage());
+                },
+                value: 'themeSettings',
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.dark_mode_outlined,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Theme Settings',
                       style: TextStyle(),
                     ),
                   ],
@@ -112,14 +120,9 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               // QR Scanner Section
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.white,
-                child: Icon(
-                  Icons.qr_code_scanner,
-                  size: 60,
-                  color: Theme.of(context).primaryColor,
-                ),
+              const Icon(
+                Icons.qr_code_scanner,
+                size: 60,
               ),
               const SizedBox(height: 30),
               // Scan Button

@@ -153,7 +153,9 @@ class HomeController extends GetxController {
       scanResult.value = barcodeScanResult;
       _handleScannedData(barcodeScanResult);
     } catch (e) {
-      scanMessage.value = "An error occurred while scanning: $e";
+      scanMessage.value = "Scanning cancelled.";
+
+      debugPrint(e.toString());
     }
   }
 

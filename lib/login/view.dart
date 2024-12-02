@@ -41,99 +41,103 @@ class LoginPage extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                'assets/images/logo.png',
-                width: Get.width * 0.5,
-              ),
-
-              SizedBox(height: Get.height * 0.1),
-              // Title
-              Text(
-                'Welcome Back!',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  color: theme.colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  width: Get.width * 0.5,
                 ),
-              ),
-              const SizedBox(height: 16),
 
-              // Username field
-              Obx(() => TextField(
-                    controller: loginController.usernameController.value,
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      labelStyle: theme.textTheme.bodyMedium
-                          ?.copyWith(color: theme.colorScheme.primary),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: theme.colorScheme.primary),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                    ),
-                  )),
-              const SizedBox(height: 16),
+                SizedBox(height: Get.height * 0.1),
+                // Title
+                Text(
+                  'Welcome Back!',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
 
-              // Password field
-              Obx(() => TextField(
-                    controller: loginController.passwordController.value,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: theme.textTheme.bodyMedium
-                          ?.copyWith(color: theme.colorScheme.primary),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                // Username field
+                Obx(() => TextField(
+                      controller: loginController.usernameController.value,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.person),
+                        labelText: 'Username',
+                        labelStyle: theme.textTheme.bodyMedium
+                            ?.copyWith(color: theme.colorScheme.primary),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: theme.colorScheme.primary),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: theme.colorScheme.primary),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                    ),
-                  )),
-              const SizedBox(height: 32),
+                    )),
+                const SizedBox(height: 16),
 
-              // Login button
-              Obx(() => FilledButton(
-                    onPressed: loginController.isLoading.value
-                        ? null
-                        : loginController.login,
-                    style: FilledButton.styleFrom(
-                      fixedSize: Size.fromWidth(Get.width),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 14, horizontal: 40),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                // Password field
+                Obx(() => TextField(
+                      controller: loginController.passwordController.value,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock),
+                        labelText: 'Password',
+                        labelStyle: theme.textTheme.bodyMedium
+                            ?.copyWith(color: theme.colorScheme.primary),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: theme.colorScheme.primary),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ),
                       ),
-                    ),
-                    child: loginController.isLoading.value
-                        ? const CircularProgressIndicator()
-                        : const Text(
-                            'Login',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                    )),
+                const SizedBox(height: 32),
+
+                // Login button
+                Obx(() => FilledButton(
+                      onPressed: loginController.isLoading.value
+                          ? null
+                          : loginController.login,
+                      style: FilledButton.styleFrom(
+                        fixedSize: Size.fromWidth(Get.width),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 14, horizontal: 40),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: loginController.isLoading.value
+                          ? const CircularProgressIndicator()
+                          : const Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                  )),
-            ],
+                    )),
+              ],
+            ),
           ),
         ),
       ),
