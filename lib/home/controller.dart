@@ -141,6 +141,7 @@ class HomeController extends GetxController {
 
   Future<void> scanBarcode(BuildContext context) async {
     try {
+      scanMessage.value = '';
       // Start barcode scanning
       final barcodeScanResult = await SimpleBarcodeScanner.scanBarcode(context);
 
@@ -184,6 +185,7 @@ class HomeController extends GetxController {
     } catch (e) {
       isLoading.value = false;
       _showToast(e.toString(), isError: true);
+      scanMessage.value = e.toString();
     } finally {
       isLoading.value = false;
     }
